@@ -1,0 +1,81 @@
+services:
+  db:
+    image: postgres:15
+    restart: unless-stopped
+    volumes:
+      - db-data:/data/postgres
+    networks:
+      - db-network
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      retries: 5
+      start_period: 30s
+      timeout: 10s
+
+  minio:
+    image: pgsty/silo:latest
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    ports: ["9000:9000", "9001:9001"]
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+    networks:
+      - minio-network
+    volumes:
+      - minio-volume:/data
+    healthcheck:
+      test: ["CMD", "silo", "healthcheck", "ready"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build: ./backend
+    networks:
+      - minio-network
+      - db-network
+      - backend-network
+    depends_on:
+      db:
+        condition: service_healthy
+        restart: true
+      minio:
+        condition: service_healthy
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: "postgresql://$${{POSTGRES_USER}}:$${{POSTGRES_PASSWORD}}@db:5432/$${{POSTGRES_DB}}"
+
+  frontend:
+    build: ./frontend
+    networks:
+      - backend-network
+    depends_on:
+      backend:
+        condition: service_started
+    restart: unless-stopped
+    environment:
+      API_URL: "http://backend:80"
+
+  bot:
+    build: ./bot
+    depends_on:
+      backend:
+        condition: service_started
+    # restart: unless-stopped
+    tty: true
+
+networks:
+  minio-network:
+    driver: bridge
+  db-network:
+    driver: bridge
+  backend-network:
+
+volumes:
+  minio-volume:
+  db-data:
+    driver: local
