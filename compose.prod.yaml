@@ -1,0 +1,5 @@
+services:
+  frontend:
+    build: ./frontend
+    environment:
+      NODE_ENV: production

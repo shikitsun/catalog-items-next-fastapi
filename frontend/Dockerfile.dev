@@ -1,0 +1,20 @@
+# Dockerfile.dev
+FROM node:${NODE_VERSION}
+
+WORKDIR /app
+
+# Install dependencies for native modules
+RUN apk add --no-cache python3 make g++
+
+# Install dependencies first (better caching)
+COPY package*.json ./
+RUN npm install
+
+# Source code mounted via volume, not copied
+# This enables hot reloading
+
+# Expose port for the application
+EXPOSE 3000
+
+# Use nodemon or similar for hot reloading
+CMD ["npm", "run", "dev"]

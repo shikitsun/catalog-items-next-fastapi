@@ -1,3 +1,5 @@
+# Dev services: backend are exposed, frontend don't included
+
 services:
   db:
     image: postgres:15
@@ -6,8 +8,8 @@ services:
       - db-data:/data/postgres
     networks:
       - db-network
-    environment:
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    env_file:
+      - .env
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
       interval: 10s
@@ -19,14 +21,15 @@ services:
     image: pgsty/silo:latest
     restart: unless-stopped
     command: server /data --console-address ":9001"
+    # taken from silo guidlines
     ports: ["9000:9000", "9001:9001"]
-    environment:
-      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
-      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+    env_file:
+      - .env
     networks:
       - minio-network
     volumes:
-      - minio-volume:/data
+      - minio1-volume:/data
+      - minio2-volume:/data2
     healthcheck:
       test: ["CMD", "silo", "healthcheck", "ready"]
       interval: 5s
@@ -39,6 +42,8 @@ services:
       - minio-network
       - db-network
       - backend-network
+    ports:
+      - "9091:9091"
     depends_on:
       db:
         condition: service_healthy
@@ -46,8 +51,10 @@ services:
       minio:
         condition: service_healthy
     restart: unless-stopped
+    env_file:
+      - .env
     environment:
-      DATABASE_URL: "postgresql://$${{POSTGRES_USER}}:$${{POSTGRES_PASSWORD}}@db:5432/$${{POSTGRES_DB}}"
+      DEBUG: true
 
   frontend:
     build: ./frontend
@@ -58,7 +65,8 @@ services:
         condition: service_started
     restart: unless-stopped
     environment:
-      API_URL: "http://backend:80"
+      API_URL: "http://backend:9091"
+      NODE_VERSION: "24-alpine"
 
   bot:
     build: ./bot
@@ -76,6 +84,7 @@ networks:
   backend-network:
 
 volumes:
-  minio-volume:
+  minio1-volume:
+  minio2-volume:
   db-data:
     driver: local

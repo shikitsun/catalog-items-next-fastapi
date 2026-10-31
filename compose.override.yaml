@@ -1,0 +1,10 @@
+services:
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: ./frontend/Dockerfile.dev
+    expose:
+      - 3000
+    environment:
+      NODE_ENV: development
+      API_URL: http://localhost:9091
