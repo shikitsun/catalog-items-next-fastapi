@@ -1,13 +1,10 @@
 from fastapi import FastAPI
 
-app = FastAPI();
+from app.core.config import get_settings
 
+settings = get_settings()
+app = FastAPI(title=settings.app_name, debug=settings.debug)
 
-@app.get("/")
-async def read_root():
-    return {"Hello": "World"}
-
-
-@app.get("/items/{item_id}")
-async def read_item(item_id: int, q: str | None = None):
-    return {"item_id": item_id, "q": q}
+@app.get("/health")
+async def health() -> dict:
+    return {"status": "ok"}
