@@ -16,6 +16,7 @@ class S3Settings(BaseSettings):
     s3_root_user: str
     s3_root_password: str
     s3_url: str
+    s3_bucket_name: str
 
 @lru_cache
 def get_settings() -> Settings:
