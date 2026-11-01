@@ -1,30 +1,52 @@
-from fastapi import APIRouter, Depends, HTTPException, status
-
+import uuid
+from fastapi import APIRouter, Depends, File, Form, HTTPException, status, UploadFile
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import get_db
 from app.models.item import Item
-from app.schemas.item import ItemCreate, ItemRead, ItemUpdate
+from app.schemas.item import ItemRead, ItemUpdate
+from app.services.file import upload_file
 
 router = APIRouter()
 
 @router.post('/', response_model=ItemRead, status_code=status.HTTP_201_CREATED)
-async def create(payload: ItemCreate, db: AsyncSession = Depends(get_db())) ->  Item:
-    item = Item(**payload.model_dump())
+async def create(
+    title: str = Form(...),
+    file: UploadFile = File(...),
+    db: AsyncSession = Depends(get_db),
+) -> Item:
+    preview_url = upload_file(file)
+    item = Item(title=title, preview_url=preview_url)
     db.add(item)
     await db.commit()
     await db.refresh(item)
     return item
 
-@router.get('/all', response_model=list[ItemRead])
-async def all(_: None, db: AsyncSession = Depends(get_db())) -> list[ItemRead]:
-    result = await db.execute(select(ItemRead).order_by(Item.created_at.desc()))
+@router.get("/{id}", response_model=ItemRead)
+async def get(
+    id: uuid.UUID,
+    db: AsyncSession = Depends(get_db),
+) -> ItemRead:
+    item = await db.get(Item, id)
+    if item is None:
+        raise HTTPException(status_code=404, detail="Item not found")
+    return item
+
+
+@router.get("/all", response_model=list[ItemRead])
+async def list_all(
+    _: None,
+    db: AsyncSession = Depends(get_db),
+) -> list[ItemRead]:
+    result = await db.execute(select(Item).order_by(Item.created_at.desc()))
     return list(result.scalars().all())
 
 @router.patch("/{id}", response_model=ItemRead)
 async def update(
-    id: int, payload: ItemUpdate, db: AsyncSession = Depends(get_db)
+    id: uuid.UUID,
+    payload: ItemUpdate,
+    db: AsyncSession = Depends(get_db),
 ) -> Item:
     item = await db.get(Item, id)
     if item is None:
