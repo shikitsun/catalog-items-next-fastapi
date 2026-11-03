@@ -1,6 +1,6 @@
 FROM ghcr.io/astral-sh/uv:python3.15-alpine
 WORKDIR /code
-COPY . ./code
+COPY . .
 
 RUN --mount=type=cache,target=/root/.cache/uv \
     --mount=type=bind,source=uv.lock,target=uv.lock \
