@@ -8,6 +8,8 @@ class Settings(BaseSettings):
     app_name: str = "catalogue-api"
     debug: bool = False
     database_url: str  # e.g. postgresql+asyncpg://user:pass@localhost/db
+    # validate protected urls by token
+    internal_token: str
 
 
 # S3 specific settings, keep separate for convenience
