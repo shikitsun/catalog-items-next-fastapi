@@ -10,6 +10,7 @@ class Settings(BaseSettings):
     database_url: str  # e.g. postgresql+asyncpg://user:pass@localhost/db
     # validate protected urls by token
     internal_token: str
+    bot_api_url: str # internal verification bot api
 
 
 # S3 specific settings, keep separate for convenience
