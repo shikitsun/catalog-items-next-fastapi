@@ -7,13 +7,13 @@ services:
     develop:
       watch:
         - action: sync
-          path: .
+          path: ./backend
           target: /app
           ignore:
             - .venv/
 
         - action: rebuild
-          path: ./pyproject.toml
+          path: ./backend/pyproject.toml
 
   frontend:
     build:
@@ -32,10 +32,10 @@ services:
     develop:
       watch:
         - action: sync
-          path: .
+          path: ./frontend
           target: /app
           ignore:
             - ./node_modules/
             - ./.next/
         - action: rebuild
-          path: ./package.json
+          path: ./frontend/package.json
