@@ -9,13 +9,12 @@ from aiogram.enums import ParseMode
 from aiogram.filters import CommandStart
 from aiogram.types import Message
 
+from routes.admin import admin_router
+
 # Bot token can be obtained via https://t.me/BotFather
 TOKEN = getenv("BOT_TOKEN")
 
-# All handlers should be attached to the Router (or Dispatcher)
-
 dp = Dispatcher()
-
 
 @dp.message(CommandStart())
 async def command_start_handler(message: Message) -> None:
@@ -48,6 +47,7 @@ async def echo_handler(message: Message) -> None:
 async def main() -> None:
     # Initialize Bot instance with default bot properties which will be passed to all API calls
     bot = Bot(token=TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
+    dp.include_router(admin_router)
 
     # And the run events dispatching
     await dp.start_polling(bot)
