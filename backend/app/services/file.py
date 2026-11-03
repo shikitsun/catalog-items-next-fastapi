@@ -10,7 +10,7 @@ SETTINGS = get_settings_s3()
 
 # Retrieve only host and port
 HOST = SETTINGS.s3_url.replace("http://", "").replace("https://", "")
-PROTOCOL = "https" if SETTINGS.s3_url.find("https") == -1  else "http"
+PROTOCOL = "https" if SETTINGS.s3_url.find("https") != -1  else "http"
 
 CLIENT = Minio(
     HOST,
