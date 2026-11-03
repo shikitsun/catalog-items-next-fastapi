@@ -7,10 +7,11 @@ from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import StatesGroup, State
 from aiogram.types import Message
-import httpx
+from httpx import AsyncClient
+
+from bot.core.config import API_URL
 
 ADMIN_IDS = (int(value) for value in getenv("BOT_ADMIN_IDS", "").split(",") if value.strip())
-API_URL = getenv("API_URL").strip()
 TOKEN = getenv("INTERNAL_TOKEN")
 
 class AddItemCtx(StatesGroup):
@@ -39,7 +40,7 @@ async def receive(message: Message, state: FSMContext, bot: Bot) -> None:
 
     await message.answer(f"Starting uploading ${title} to server...")
 
-    async with httpx.AsyncClient(timeout=30) as client:
+    async with AsyncClient(timeout=30) as client:
         response = await client.post(
             f"{API_URL}/items",
             data={"title": title},
