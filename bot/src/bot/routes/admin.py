@@ -9,10 +9,9 @@ from aiogram.fsm.state import StatesGroup, State
 from aiogram.types import Message
 from httpx import AsyncClient
 
-from bot.core.config import API_URL
+from bot.core.config import API_URL, INTERNAL_TOKEN
 
 ADMIN_IDS = (int(value) for value in getenv("BOT_ADMIN_IDS", "").split(",") if value.strip())
-TOKEN = getenv("INTERNAL_TOKEN")
 
 class AddItemCtx(StatesGroup):
     waiting_for_item_data = State()
@@ -48,7 +47,7 @@ async def receive(message: Message, state: FSMContext, bot: Bot) -> None:
             # X-Admin-Token used for authentication purposes (between bot and backend)
             # X-Admin-UserId could be used for track which admin are added certain items
             # For now it don't are active used, but showing possibility there
-            headers={"X-Admin-Token": TOKEN, "X-Admin-UserId": message.from_user.id}
+            headers={"X-Admin-Token": INTERNAL_TOKEN, "X-Admin-UserId": message.from_user.id}
         )
         # Could be attached retry mechanic as well, but keep it simple for now
         await state.clear()

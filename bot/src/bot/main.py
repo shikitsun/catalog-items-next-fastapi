@@ -10,11 +10,11 @@ from aiogram.filters import CommandStart
 from aiogram.types import Message, InlineKeyboardButton, InlineKeyboardMarkup, WebAppInfo
 
 from bot.api.items import get_items_list
-from bot.core.config import APP_URL
+from bot.api.verify import init_web_app
+from bot.core.config import APP_URL, TOKEN
 from routes.admin import admin_router
 
 # Bot token can be obtained via https://t.me/BotFather
-TOKEN = getenv("BOT_TOKEN")
 
 dp = Dispatcher()
 
@@ -43,3 +43,4 @@ async def main() -> None:
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO, stream=sys.stdout)
     asyncio.run(main())
+    init_web_app()
