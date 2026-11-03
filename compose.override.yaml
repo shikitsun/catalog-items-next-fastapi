@@ -13,17 +13,21 @@ services:
             - .venv/
 
         - action: rebuild
-          path: ./backend/pyproject.toml
+          path: ./pyproject.toml
 
   frontend:
     build:
       context: ./frontend
-      dockerfile: ./frontend/Dockerfile.dev
-    expose:
-      - 3000
+      dockerfile: ./Dockerfile.dev
+    ports:
+      - "3000:3000"
     environment:
       NODE_ENV: development
       API_URL: http://localhost:9091
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+      - /app/.next
 
     develop:
       watch:
@@ -31,7 +35,7 @@ services:
           path: .
           target: /app
           ignore:
-            - ./frontend/node_modules/
-            - ./.frontend/.next/
+            - ./node_modules/
+            - ./.next/
         - action: rebuild
-          path: ./frontend/package.json
+          path: ./package.json

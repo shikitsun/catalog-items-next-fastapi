@@ -1,5 +1,5 @@
 # Dockerfile.dev
-FROM node:${NODE_VERSION}
+FROM node:24-alpine
 
 WORKDIR /app
 
@@ -8,7 +8,8 @@ RUN apk add --no-cache python3 make g++
 
 # Install dependencies first (better caching)
 COPY package*.json ./
-RUN npm install
+RUN npm ci
+COPY . .
 
 # Source code mounted via volume, not copied
 # This enables hot reloading
@@ -17,4 +18,4 @@ RUN npm install
 EXPOSE 3000
 
 # Use nodemon or similar for hot reloading
-CMD ["npm", "run", "dev"]
+CMD ["npm", "run", "dev", "--", "--hostname", "0.0.0.0"]
