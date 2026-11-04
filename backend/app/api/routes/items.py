@@ -1,23 +1,25 @@
 import uuid
+
 from fastapi import APIRouter, Depends, File, Form, HTTPException, status, UploadFile
 from fastapi.params import Header
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import get_db
-from app.main import settings
+from app.core.config import get_settings
 from app.models.item import Item
 from app.schemas.item import ItemRead, ItemUpdate
 from app.services.file import upload_file
 
 router = APIRouter()
+settings = get_settings()
 
 @router.post('/', response_model=ItemRead, status_code=status.HTTP_201_CREATED)
 async def create(
     title: str = Form(...),
     file: UploadFile = File(...),
     db: AsyncSession = Depends(get_db),
-    x_admin_token: Header | None = None
+    x_admin_token: str | None = Header(default=None, alias="x-admin-token")
 ) -> Item:
     if x_admin_token != settings.internal_token:
         raise HTTPException(status_code=401, detail="Unauthorized")

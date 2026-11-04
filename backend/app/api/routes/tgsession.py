@@ -3,8 +3,9 @@ from pydantic import BaseModel
 from httpx import AsyncClient
 from starlette.responses import JSONResponse
 
-from app.main import settings
+from app.core.config import get_settings
 
+settings = get_settings()
 router = APIRouter()
 
 class InitDataModel(BaseModel):
