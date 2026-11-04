@@ -72,6 +72,8 @@ services:
     build: ./bot
     networks:
       - backend-network
+    env_file:
+      - .env
     depends_on:
       backend:
         condition: service_started
