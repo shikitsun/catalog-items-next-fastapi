@@ -1,4 +1,5 @@
 import { getItems, IItem } from "@/entities/item";
+import { BaseItemCard } from "@/entities/ui/BaseItemCard";
 
 export default async function Home() {
   const items: IItem[] = await getItems();
@@ -6,12 +7,18 @@ export default async function Home() {
   // Handle empty states
   if (!items?.length)
     return (
-      <main>
+      <main className="px-5 py-5">
         <h1>
           No items available yet. Please, wait for catalog items are arrives
         </h1>
       </main>
     );
 
-  return <main></main>;
+  return (
+    <main className="flex flex-wrap items-center justify-center gap-x-5 gap-y-5 px-5 py-5">
+      {items.map((item) => (
+        <BaseItemCard key={item.id} {...item} />
+      ))}
+    </main>
+  );
 }
