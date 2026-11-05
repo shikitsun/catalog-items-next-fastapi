@@ -25,7 +25,10 @@ async def verify(request: web.Request):
     })
 
 
-def init_web_app():
+async def init_web_app():
     app = web.Application()
     app.router.add_post("/validate", verify)
-    web.run_app(app, port=WEB_APP_PORT)
+    runner = web.AppRunner(app)
+    await runner.setup()
+    await web.TCPSite(runner, "0.0.0.0", WEB_APP_PORT).start()
+    return runner

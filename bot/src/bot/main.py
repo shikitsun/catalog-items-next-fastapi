@@ -11,7 +11,7 @@ from aiogram.types import Message, InlineKeyboardButton, InlineKeyboardMarkup, W
 from bot.api.items import get_items_list
 from bot.api.verify import init_web_app
 from bot.core.config import APP_URL, TOKEN
-from routes.admin import admin_router
+from bot.routes.admin import admin_router
 
 # Bot token can be obtained via https://t.me/BotFather
 
@@ -31,15 +31,17 @@ async def command_start_handler(message: Message) -> None:
 
 
 async def main() -> None:
+    runner = await init_web_app()
     # Initialize Bot instance with default bot properties which will be passed to all API calls
     bot = Bot(token=TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
     dp.include_router(admin_router)
 
     # And the run events dispatching
-    await dp.start_polling(bot)
-
+    try:
+        await dp.start_polling(bot)
+    finally:
+        await runner.cleanup()
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO, stream=sys.stdout)
-    asyncio.create_task(init_web_app())
     asyncio.run(main())
