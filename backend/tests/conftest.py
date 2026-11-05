@@ -8,7 +8,7 @@ from alembic.config import Config
 
 from dotenv import load_dotenv
 
-load_dotenv('./../../.env.test', override=True)
+load_dotenv('./../.env.test', override=True)
 
 from app.core.config import get_settings, get_settings_s3
 from app.api.deps import get_db
