@@ -4,7 +4,7 @@ import { Suspense, use } from "react";
 import { handlers } from "@/mocks/handlers";
 
 const mockingEnabledPromise =
-  typeof window !== "undefined"
+  typeof window !== "undefined" && process.env.NODE_ENV !== "production"
     ? import("@/mocks/browser").then(async ({ worker }) => {
         await worker.start({
           // @ts-expect-error known type
