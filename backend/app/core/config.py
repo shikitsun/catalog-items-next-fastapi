@@ -11,6 +11,8 @@ class Settings(BaseSettings):
     # validate protected urls by token
     internal_token: str
     bot_api_url: str # internal verification bot api
+    # in MB
+    max_upload_bytes: int = 10 * 1024 * 1024
 
 
 # S3 specific settings, keep separate for convenience

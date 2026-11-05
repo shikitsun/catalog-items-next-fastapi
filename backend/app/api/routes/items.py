@@ -9,11 +9,18 @@ from app.api.deps import get_db
 from app.core.config import get_settings
 from app.models.item import Item
 from app.schemas.item import ItemRead, ItemUpdate
-from app.services.file import upload_file
+from app.services.file import (
+    EmptyUploadError,
+    UnsupportedMediaTypeError,
+    UploadTooLargeError,
+    upload_file,
+)
 
 router = APIRouter()
 settings = get_settings()
 
+# here used HTTP_201_CREATED status, but in another places are just number
+# ...oops?
 @router.post('/', response_model=ItemRead, status_code=status.HTTP_201_CREATED)
 async def create(
     title: str = Form(...),
@@ -24,7 +31,19 @@ async def create(
     if x_admin_token != settings.internal_token:
         raise HTTPException(status_code=401, detail="Unauthorized")
 
-    preview_url = upload_file(file)
+    try:
+        preview_url = upload_file(file, max_bytes=settings.max_upload_bytes)
+    except UploadTooLargeError as exc:
+        raise HTTPException(
+            status_code=413, detail=str(exc)
+        ) from exc
+    except UnsupportedMediaTypeError as exc:
+        raise HTTPException(
+            status_code=415, detail=str(exc)
+        ) from exc
+    except EmptyUploadError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
     item = Item(title=title, preview_url=preview_url)
     db.add(item)
     await db.commit()
