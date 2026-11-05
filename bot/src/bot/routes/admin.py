@@ -11,7 +11,7 @@ from httpx import AsyncClient
 
 from bot.core.config import API_URL, INTERNAL_TOKEN
 
-ADMIN_IDS = (int(value) for value in getenv("BOT_ADMIN_IDS", "").split(",") if value.strip())
+ADMIN_IDS = frozenset([int(value) for value in getenv("BOT_ADMIN_IDS", "").split(",") if value.strip()])
 
 class AddItemCtx(StatesGroup):
     waiting_for_item_data = State()
