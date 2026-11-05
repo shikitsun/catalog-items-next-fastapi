@@ -1,7 +1,6 @@
 "use client";
 
 import { Suspense, use } from "react";
-import { handlers } from "@/mocks/handlers";
 
 const mockingEnabledPromise =
   typeof window !== "undefined" && process.env.NODE_ENV !== "production"
@@ -15,7 +14,6 @@ const mockingEnabledPromise =
             print.warning();
           },
         });
-        worker.use(...handlers);
 
         console.log(worker.listHandlers());
       })
