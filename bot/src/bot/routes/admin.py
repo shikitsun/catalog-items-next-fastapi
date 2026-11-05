@@ -37,7 +37,7 @@ async def receive(message: Message, state: FSMContext, bot: Bot) -> None:
     await bot.download(message.photo[-1].file_id, destination=image)
     image.seek(0)
 
-    await message.answer(f"Starting uploading ${title} to server...")
+    msg = await message.answer(f"Starting uploading ${title} to server...")
 
     async with AsyncClient(timeout=30) as client:
         response = await client.post(
@@ -50,14 +50,14 @@ async def receive(message: Message, state: FSMContext, bot: Bot) -> None:
             headers={"X-Admin-Token": INTERNAL_TOKEN, "X-Admin-UserId": message.from_user.id}
         )
         # Could be attached retry mechanic as well, but keep it simple for now
-        await state.clear()
         try:
             response.raise_for_status()
         # Don't handle specific errors for now
         except:
-            await message.edit_text(f"Failed to save item with title: {title}")
+            await msg.edit_text(f"Failed to save item with title: {title}")
         else:
-            await message.edit_text(f"Successfully saved as ${title}")
+            await state.clear()
+            await msg.edit_text(f"Successfully saved as ${title}")
 
 
 @admin_router.message(AddItemCtx.waiting_for_item_data)
