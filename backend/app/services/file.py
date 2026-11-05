@@ -1,4 +1,6 @@
 import uuid
+from datetime import timedelta
+
 from fastapi import UploadFile
 from minio import Minio, InvalidResponseError
 from io import BytesIO
@@ -7,17 +9,20 @@ from app.core.config import get_settings_s3
 
 SETTINGS = get_settings_s3()
 
-# Retrieve only host and port
-HOST = SETTINGS.s3_url.replace("http://", "").replace("https://", "")
-PROTOCOL = "https" if SETTINGS.s3_url.find("https") != -1  else "http"
+PRESIGNED_URL_TTL = timedelta(hours=1)
 
-CLIENT = Minio(
-    HOST,
-    access_key=SETTINGS.s3_root_user,
-    secret_key=SETTINGS.s3_root_password,
-    # If protocol are https - it is secure, otherwise likely it was running inside
-    secure=PROTOCOL == "https",
-)
+
+def create_client(url: str) -> Minio:
+    return Minio(
+        url.replace("http://", "").replace("https://", ""),
+        access_key=SETTINGS.s3_root_user,
+        secret_key=SETTINGS.s3_root_password,
+        secure=url.startswith("https"),
+    )
+
+
+CLIENT = create_client(SETTINGS.s3_url)
+PUBLIC_CLIENT = create_client(SETTINGS.s3_public_url or SETTINGS.s3_url)
 
 ALLOWED_CONTENT_TYPES: dict[str, str] = {
     "image/jpeg": ".jpg",
@@ -94,4 +99,10 @@ def upload_file(file: UploadFile, *, max_bytes: int) -> str:
         content_type=content_type,
     )
 
-    return f"{PROTOCOL}://{HOST}/{SETTINGS.s3_bucket_name}/{object_name}"
+    return object_name
+
+
+def presigned_url(object_name: str) -> str:
+    return PUBLIC_CLIENT.presigned_get_object(
+        SETTINGS.s3_bucket_name, object_name, expires=PRESIGNED_URL_TTL
+    )

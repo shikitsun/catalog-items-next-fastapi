@@ -13,11 +13,20 @@ from app.services.file import (
     EmptyUploadError,
     UnsupportedMediaTypeError,
     UploadTooLargeError,
+    presigned_url,
     upload_file,
 )
 
 router = APIRouter()
 settings = get_settings()
+
+def map_into_read(item: Item) -> ItemRead:
+    return ItemRead(
+        id=item.id,
+        title=item.title,
+        preview_url=presigned_url(item.preview_url),
+        created_at=item.created_at,
+    )
 
 # here used HTTP_201_CREATED status, but in another places are just number
 # ...oops?
@@ -27,7 +36,7 @@ async def create(
     file: UploadFile = File(...),
     db: AsyncSession = Depends(get_db),
     x_admin_token: str | None = Header(default=None, alias="x-admin-token")
-) -> Item:
+) -> ItemRead:
     if x_admin_token != settings.internal_token:
         raise HTTPException(status_code=401, detail="Unauthorized")
 
@@ -48,14 +57,14 @@ async def create(
     db.add(item)
     await db.commit()
     await db.refresh(item)
-    return item
+    return map_into_read(item)
 
 @router.get("/all", response_model=list[ItemRead])
 async def list_all(
     db: AsyncSession = Depends(get_db),
 ) -> list[ItemRead]:
     result = await db.execute(select(Item).order_by(Item.created_at.desc()))
-    return list(result.scalars().all())
+    return [map_into_read(item) for item in result.scalars().all()]
 
 @router.get("/{id}", response_model=ItemRead)
 async def get(
@@ -65,7 +74,7 @@ async def get(
     item = await db.get(Item, id)
     if item is None:
         raise HTTPException(status_code=404, detail="Item not found")
-    return item
+    return map_into_read(item)
 
 @router.patch("/{id}", response_model=ItemRead)
 async def update(
@@ -73,7 +82,7 @@ async def update(
     payload: ItemUpdate,
     db: AsyncSession = Depends(get_db),
     x_admin_token: str | None = Header(default=None, alias="x-admin-token")
-) -> Item:
+) -> ItemRead:
     if x_admin_token != settings.internal_token:
         raise HTTPException(status_code=401, detail="Unauthorized")
 
@@ -84,4 +93,4 @@ async def update(
         setattr(item, field, value)
     await db.commit()
     await db.refresh(item)
-    return item
+    return map_into_read(item)
