@@ -31,6 +31,13 @@ async def create(
     await db.refresh(item)
     return item
 
+@router.get("/all", response_model=list[ItemRead])
+async def list_all(
+    db: AsyncSession = Depends(get_db),
+) -> list[ItemRead]:
+    result = await db.execute(select(Item).order_by(Item.created_at.desc()))
+    return list(result.scalars().all())
+
 @router.get("/{id}", response_model=ItemRead)
 async def get(
     id: uuid.UUID,
@@ -40,15 +47,6 @@ async def get(
     if item is None:
         raise HTTPException(status_code=404, detail="Item not found")
     return item
-
-
-@router.get("/all", response_model=list[ItemRead])
-async def list_all(
-    _: None,
-    db: AsyncSession = Depends(get_db),
-) -> list[ItemRead]:
-    result = await db.execute(select(Item).order_by(Item.created_at.desc()))
-    return list(result.scalars().all())
 
 @router.patch("/{id}", response_model=ItemRead)
 async def update(
