@@ -1,17 +1,17 @@
-import pytest_asyncio
 from collections.abc import AsyncGenerator
 
+import pytest_asyncio
+from alembic.config import Config
+from dotenv import load_dotenv
 from httpx import ASGITransport, AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
+
 from alembic import command
-from alembic.config import Config
 
-from dotenv import load_dotenv
+load_dotenv('./../.env.test', override=False)
 
-load_dotenv('./../.env.test', override=True)
-
-from app.core.config import get_settings, get_settings_s3
 from app.api.deps import get_db
+from app.core.config import get_settings, get_settings_s3
 from app.main import app
 
 settings = get_settings()
@@ -23,7 +23,7 @@ TestSessionLocal = async_sessionmaker(test_engine, expire_on_commit=False, class
 async def setup_db():
     async with test_engine.begin() as conn:
         def upgrade(sync_conn):
-            cfg = Config("./../alembic.ini")
+            cfg = Config("./alembic.ini")
             cfg.attributes["connection"] = sync_conn
             command.upgrade(cfg, 'head')
         await conn.run_sync(upgrade)
