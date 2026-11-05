@@ -1,6 +1,8 @@
 import { getItems, IItem } from "@/entities/item";
 import { BaseItemCard } from "@/entities/ui/BaseItemCard";
 
+export const dynamic = "force-dynamic";
+
 export default async function Home() {
   const items: IItem[] = await getItems();
 
