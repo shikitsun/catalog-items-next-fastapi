@@ -6,6 +6,12 @@ const nextConfig: NextConfig = {
   partialPrefetching: false,
   output: "standalone",
   trailingSlash: true,
+  allowedDevOrigins: [
+    "localhost:8080",
+    "127.0.0.1:8080",
+    "localhost:3000",
+    "127.0.0.1:3000",
+  ],
   images: {
     unoptimized: true,
   },

@@ -1,3 +1,5 @@
+ARG NODE_VERSION=24-alpine
+
 # ============================================
 # Stage 1: Dependencies Installation Stage
 # ============================================
