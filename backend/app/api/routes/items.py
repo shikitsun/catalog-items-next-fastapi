@@ -53,7 +53,11 @@ async def update(
     id: uuid.UUID,
     payload: ItemUpdate,
     db: AsyncSession = Depends(get_db),
+    x_admin_token: str | None = Header(default=None, alias="x-admin-token")
 ) -> Item:
+    if x_admin_token != settings.internal_token:
+        raise HTTPException(status_code=401, detail="Unauthorized")
+
     item = await db.get(Item, id)
     if item is None:
         raise HTTPException(status_code=404, detail="Item not found")
