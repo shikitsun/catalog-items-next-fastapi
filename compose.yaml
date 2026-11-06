@@ -21,8 +21,6 @@ services:
     image: pgsty/silo:latest
     restart: unless-stopped
     command: server /data --console-address ":9001"
-    # taken from silo guidlines
-    ports: ["9000:9000", "9001:9001"]
     env_file:
       - .env
     networks:
@@ -42,8 +40,6 @@ services:
       - minio-network
       - db-network
       - backend-network
-    ports:
-      - "9091:9091"
     depends_on:
       db:
         condition: service_healthy
@@ -55,6 +51,19 @@ services:
       - .env
     environment:
       DEBUG: true
+      S3_PUBLIC_URL: ${S3_PUBLIC_URL:-http://localhost:9000}
+
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import json,urllib.request; r=urllib.request.urlopen('http://127.0.0.1:9091/health', timeout=2); assert json.load(r).get('status') == 'ok'",
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   frontend:
     build: ./frontend
@@ -62,7 +71,7 @@ services:
       - backend-network
     depends_on:
       backend:
-        condition: service_started
+        condition: service_healthy
     restart: unless-stopped
     environment:
       API_URL: "http://backend:9091"
@@ -74,11 +83,26 @@ services:
       - backend-network
     env_file:
       - .env
+    environment:
+      REDIS_URL: redis://redis:6379/0
     depends_on:
       backend:
-        condition: service_started
-    # restart: unless-stopped
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
     tty: true
+
+  redis:
+    image: redis:8.8.4-alpine
+    restart: unless-stopped
+    networks:
+      - backend-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
 networks:
   minio-network:

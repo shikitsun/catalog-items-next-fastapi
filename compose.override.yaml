@@ -24,8 +24,6 @@ services:
     build:
       context: ./frontend
       dockerfile: ./Dockerfile.dev
-    ports:
-      - "3000:3000"
     environment:
       NODE_ENV: development
 
@@ -40,8 +38,8 @@ services:
           path: ./frontend
           target: /app
           ignore:
-            - ./node_modules/
-            - ./.next/
+            - node_modules/
+            - .next/
         - action: rebuild
           path: ./frontend/package.json
 
