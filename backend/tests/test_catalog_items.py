@@ -1,3 +1,4 @@
+import uuid
 import pytest
 from app.core.config import get_settings
 
@@ -48,7 +49,7 @@ async def test_create_then_get(client):
 
 @pytest.mark.asyncio
 async def test_update_item(client):
-    create = await client.post("/items", data={"title": "Initial"}, headers=ADMIN)
+    create = await client.post("/items/", data={"title": "Initial"}, headers=ADMIN)
     item_id = create.json()["id"]
 
     update = await client.patch(f"/items/{item_id}", json={"title": "Updated"}, headers=ADMIN)
@@ -58,7 +59,7 @@ async def test_update_item(client):
 
 @pytest.mark.asyncio
 async def test_create_requires_admin_token(client):
-    response = await client.post("/items", data={"title": "Item 3"}, files={
+    response = await client.post("/items/", data={"title": "Item 3"}, files={
                 "file": (
                     "test.jpg",
                     b"test",
@@ -70,5 +71,5 @@ async def test_create_requires_admin_token(client):
 
 @pytest.mark.asyncio
 async def test_get_nonexistent_returns_404(client):
-    response = await client.get("/items/99999999")
+    response = await client.get(f"/items/{uuid.uuid4()}")
     assert response.status_code == 404
