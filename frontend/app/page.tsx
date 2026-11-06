@@ -18,11 +18,13 @@ export default async function Home() {
     );
 
   return (
-    <main className="flex flex-wrap items-center justify-center gap-x-5 gap-y-5 px-5 py-5">
+    <main className="flex flex-col gap-y-2 px-5 py-5">
       <h1>Catalog</h1>
-      {items.map((item) => (
-        <BaseItemCard key={item.id} {...item} />
-      ))}
+      <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-5">
+        {items.map((item) => (
+          <BaseItemCard key={item.id} {...item} />
+        ))}
+      </div>
     </main>
   );
 }

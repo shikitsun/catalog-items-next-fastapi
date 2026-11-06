@@ -96,7 +96,7 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
-    # restart: unless-stopped
+    restart: unless-stopped
     tty: true
 
   redis:
