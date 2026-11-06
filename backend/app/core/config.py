@@ -5,7 +5,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(extra="ignore")
 
-    app_name: str = "catalogue-api"
+    app_name: str = "catalog-api"
     debug: bool = False
     database_url: str  # e.g. postgresql+asyncpg://user:pass@localhost/db
     # validate protected urls by token
