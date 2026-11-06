@@ -1,11 +1,10 @@
-from os import getenv
 from io import BytesIO
+from os import getenv
 
-from aiogram import Bot
-from aiogram import Router, F
+from aiogram import Bot, F, Router
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
-from aiogram.fsm.state import StatesGroup, State
+from aiogram.fsm.state import State, StatesGroup
 from aiogram.types import Message
 from httpx import AsyncClient
 
@@ -37,7 +36,7 @@ async def receive(message: Message, state: FSMContext, bot: Bot) -> None:
     await bot.download(message.photo[-1].file_id, destination=image)
     image.seek(0)
 
-    msg = await message.answer(f"Starting uploading ${title} to server...")
+    msg = await message.answer(f"Starting uploading {title} to server...")
 
     async with AsyncClient(timeout=30) as client:
         response = await client.post(
@@ -53,11 +52,11 @@ async def receive(message: Message, state: FSMContext, bot: Bot) -> None:
         try:
             response.raise_for_status()
         # Don't handle specific errors for now
-        except:
+        except Exception:
             await msg.edit_text(f"Failed to save item with title: {title}")
         else:
             await state.clear()
-            await msg.edit_text(f"Successfully saved as ${title}")
+            await msg.edit_text(f"Successfully saved as {title}")
 
 
 @admin_router.message(AddItemCtx.waiting_for_item_data)
