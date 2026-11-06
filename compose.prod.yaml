@@ -3,3 +3,4 @@ services:
     build: ./frontend
     environment:
       NODE_ENV: production
+    volumes: !reset []
